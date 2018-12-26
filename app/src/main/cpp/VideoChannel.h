@@ -7,44 +7,43 @@
 
 
 #include "BaseChannel.h"
-#include "macro.h"
 #include "AudioChannel.h"
 
 extern "C" {
 #include <libswscale/swscale.h>
-#include <libavutil/imgutils.h>
-#include <libavutil/time.h>
 };
 
 /**
  * 1、解码
  * 2、播放
  */
-typedef void (*RenderFrameCallback)(uint8_t *,int,int,int);
+typedef void (*RenderFrameCallback)(uint8_t *, int, int, int);
+
 class VideoChannel : public BaseChannel {
 public:
     VideoChannel(int id, AVCodecContext *avCodecContext, AVRational time_base, int fps);
 
     ~VideoChannel();
 
+    void setAudioChannel(AudioChannel *audioChannel);
+
     //解码+播放
     void play();
+
+    void stop();
 
     void decode();
 
     void render();
 
-    void stop();
-
     void setRenderFrameCallback(RenderFrameCallback callback);
 
-    void setAudioChannel(AudioChannel *audioChannel);
 private:
     pthread_t pid_decode;
     pthread_t pid_render;
-    SwsContext *swsContext=0;
-    RenderFrameCallback callback;
     int fps;
+    SwsContext *swsContext = 0;
+    RenderFrameCallback callback;
     AudioChannel *audioChannel = 0;
 };
 

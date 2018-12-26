@@ -29,6 +29,7 @@ public class MainActivity extends RxAppCompatActivity implements TabLayout
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
         // 配置recycleview
         recyclerView = findViewById(R.id.recycleView);
         LinearLayoutManager layoutManager = new LinearLayoutManager(this);

@@ -14,22 +14,31 @@ extern "C" {
 
 class BaseChannel {
 public:
-    BaseChannel(int id, AVCodecContext *avCodecContext, AVRational time_base) : id(id), avCodecContext(avCodecContext),time_base(time_base) {
-        packets.setReleaseCallback(BaseChannel::releaseAvPacket);
-        frames.setReleaseCallback(BaseChannel::releaseAvFrame);
+    BaseChannel(int id, AVCodecContext *avCodecContext, AVRational time_base) : id(id),
+                                                                                avCodecContext(
+                                                                                        avCodecContext),
+                                                                                time_base(
+                                                                                        time_base) {
+        frames.setReleaseCallback(releaseAvFrame);
+        packets.setReleaseCallback(releaseAvPacket);
     }
 
     //virtual
     virtual ~BaseChannel() {
-        packets.clear();
         frames.clear();
+        packets.clear();
+        if (avCodecContext) {
+            avcodec_close(avCodecContext);
+            avcodec_free_context(&avCodecContext);
+            avCodecContext = 0;
+        }
     }
 
     /**
      * 释放 AVPacket
      * @param packet
      */
-    static void releaseAvPacket(AVPacket** packet) {
+    static void releaseAvPacket(AVPacket **packet) {
         if (packet) {
             av_packet_free(packet);
             //为什么用指针的指针？
@@ -38,7 +47,7 @@ public:
         }
     }
 
-    static void releaseAvFrame(AVFrame** frame){
+    static void releaseAvFrame(AVFrame **frame) {
         if (frame) {
             av_frame_free(frame);
             //为什么用指针的指针？
@@ -49,14 +58,19 @@ public:
 
     //纯虚方法 相当于 抽象方法
     virtual void play() = 0;
+
     virtual void stop() = 0;
 
     int id;
+    //编码数据包队列
     SafeQueue<AVPacket *> packets;
+    //解码数据包队列
     SafeQueue<AVFrame *> frames;
     bool isPlaying;
     AVCodecContext *avCodecContext;
     AVRational time_base;
+public:
+    double clock;
 };
 
 #endif //PLAYER_BASECHANNEL_H

@@ -23,6 +23,7 @@ import java.util.List;
 public class LiveAdapter extends RecyclerView.Adapter<LiveAdapter.MyHolder> implements View
         .OnClickListener {
 
+
     private LayoutInflater layoutInflater;
     private List<Items> items;
     private OnItemClickListener mItemClickListener;

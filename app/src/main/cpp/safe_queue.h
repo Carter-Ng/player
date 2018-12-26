@@ -44,7 +44,7 @@ public:
 
     }
 
-    void push(const T new_value) {
+    void push( T new_value) {
 #ifdef C11
         //锁 和智能指针原理类似，自动释放
         lock_guard<mutex> lk(mt);
@@ -57,7 +57,8 @@ public:
         if (work) {
             q.push(new_value);
             pthread_cond_signal(&cond);
-            pthread_mutex_unlock(&mutex);
+        }else{
+            releaseCallback(&new_value);
         }
         pthread_mutex_unlock(&mutex);
 #endif
@@ -172,7 +173,6 @@ private:
     int work;
     ReleaseCallback releaseCallback;
     SyncHandle syncHandle;
-
 };
 
 

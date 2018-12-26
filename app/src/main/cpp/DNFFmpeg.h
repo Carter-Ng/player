@@ -28,7 +28,6 @@ public:
     void stop();
 
     void setRenderFrameCallback(RenderFrameCallback callback);
-
 public:
     char *dataSource;
     pthread_t pid;
