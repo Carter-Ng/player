@@ -34,6 +34,8 @@ public:
 
     void render();
 
+    void stop();
+
     void setRenderFrameCallback(RenderFrameCallback callback);
 
     void setAudioChannel(AudioChannel *audioChannel);

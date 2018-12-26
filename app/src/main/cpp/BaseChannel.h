@@ -49,6 +49,7 @@ public:
 
     //纯虚方法 相当于 抽象方法
     virtual void play() = 0;
+    virtual void stop() = 0;
 
     int id;
     SafeQueue<AVPacket *> packets;

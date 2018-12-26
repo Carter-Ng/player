@@ -124,6 +124,9 @@ void DNFFmpeg::_prepare() {
     }
     // 准备完了 通知java 你随时可以开始播放
     callHelper->onPrepare(THREAD_CHILD);
+
+    //释放
+    av_dict_free(&options);
 };
 
 void *play(void *args) {
@@ -166,25 +169,48 @@ void DNFFmpeg::_start() {
             }
         } else if (ret == AVERROR_EOF) {
             //读取完成 但是可能还没播放完
-
+            if(audioChannel && audioChannel->frames.empty()
+                    && videoChannel && videoChannel->frames.empty()){
+                break;
+            }
         } else {
             //
+            break;
         }
 
     }
+    isPlaying = 0;
+    videoChannel->stop();
+    audioChannel->stop();
+}
 
-};
 
+
+void *aync_stop(void *args){
+    DNFFmpeg *ffmpeg = static_cast<DNFFmpeg *>(args);
+
+    pthread_join(ffmpeg->pid, 0);
+    pthread_join(ffmpeg->pid_play, 0);
+    DELETE(ffmpeg->audioChannel);
+    DELETE(ffmpeg->videoChannel);
+    if(ffmpeg->formatContext){
+        //关闭流
+        avformat_close_input(&ffmpeg->formatContext);
+        avformat_free_context(ffmpeg->formatContext);
+        ffmpeg->formatContext = 0;
+    }
+    DELETE(ffmpeg);
+    return 0;
+}
 /**
  * 停止
  */
 void DNFFmpeg::stop() {
-    isPlaying = 1;//设置播放状态
-
+    isPlaying = 0;//设置播放状态
+    callHelper = 0;
     //需要等待线程完成后，方可释放对象
     //为了不阻塞主线程，开启线程来等待
-    //pthread_create()
-    //pthread_join()
+    pthread_create(&pid_stop,0 , aync_stop,this);
 }
 
 void DNFFmpeg::setRenderFrameCallback(RenderFrameCallback callback){

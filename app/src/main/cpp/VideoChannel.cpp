@@ -159,8 +159,24 @@ void VideoChannel::render() {
     }
     av_freep(&dst_data[0]);
     releaseAvFrame(&frame);
+    isPlaying = 0;
+    sws_freeContext(swsContext);
+    swsContext=0;
 }
 
 void VideoChannel::setRenderFrameCallback(RenderFrameCallback callback) {
     this->callback = callback;
+}
+
+void VideoChannel::stop() {
+    LOGE("VideoChannel::stop Now");
+    isPlaying = 0;
+    //设置为工作状态
+    frames.setWork(0);
+    packets.setWork(0);
+    //等待线程完成
+    //1、解码
+    pthread_join(pid_decode, 0);
+    //2、播放
+    pthread_join(pid_render, 0);
 }

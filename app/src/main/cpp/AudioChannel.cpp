@@ -3,6 +3,7 @@
 //
 
 #include "AudioChannel.h"
+#include "macro.h"
 
 void *audio_decode(void *args) {
     AudioChannel *channel = static_cast<AudioChannel *>(args);
@@ -57,7 +58,6 @@ void AudioChannel::play() {
 
     //初始化
     swr_init(swrContext);
-    isPlaying = 1;
     //1、解码
     pthread_create(&pid_audio_decode, 0, audio_decode, this);
     //2、播放音频
@@ -217,4 +217,43 @@ int AudioChannel::getPCM() {
     //获取sample个 * 声道数 * 字节
     data_size = samples * out_channels * out_sampleSize;
     return data_size;
+}
+
+void AudioChannel::stop() {
+    LOGE("VideoChannel::stop Now");
+    isPlaying = 0;
+    //设置为工作状态
+    frames.setWork(0);
+    packets.setWork(0);
+
+    //1、解码
+    pthread_join(pid_audio_decode, 0);
+    //2、播放音频
+    pthread_join(pid_audio_play, 0);
+
+    if(swrContext){
+        swr_free(&swrContext);
+        swrContext=0;
+    }
+
+    //释放播放器
+    if(bqPlayerObject){
+        (*bqPlayerObject)->Destroy(bqPlayerObject);
+        bqPlayerObject = 0;
+        bqPlayerInterface = 0;
+        bqPlayerBufferQueueInterface = 0;
+    }
+
+    //释放混音器
+    if(outputMixObject){
+        (*outputMixObject)->Destroy(outputMixObject);
+        outputMixObject = 0;
+    }
+
+    //释放引擎
+    if(engineObject){
+        (*engineObject)->Destroy(engineObject);
+        engineObject = 0;
+        engineInterface = 0;
+    }
 }

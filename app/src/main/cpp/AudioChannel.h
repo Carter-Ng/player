@@ -25,6 +25,8 @@ public:
 
     void _play();
 
+    void stop();
+
     int getPCM();
 
 public:

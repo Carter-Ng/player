@@ -87,4 +87,8 @@ Java_com_dongnao_player_DNPlayer_native_1stop(JNIEnv *env, jobject instance) {
 
     // TODO
     ffmpeg->stop();
+
+    if(window){
+
+    }
 }
