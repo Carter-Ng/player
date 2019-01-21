@@ -1,2 +1,2 @@
 # player
-init project
+播放器
